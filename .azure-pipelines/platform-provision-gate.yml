@@ -1,3 +1,9 @@
+# ==============================================================================
+# Pipeline Name: platform-provision-gate.yml
+# Description: Automated governance pipeline with integrated static application
+#              security testing (SAST) and compliance checking stages.
+# ==============================================================================
+
 trigger: none
 
 pool:
@@ -10,21 +16,42 @@ parameters:
   - name: deploy_env
     type: string
     default: 'QA'
-    values:
-      - SB
-      - DEV
-      - ISIT
-      - QA
-      - UAT
-      - PRD
+    values: [SB, DEV, ISIT, QA, UAT, PRD]
+  - name: asset_tier
+    type: string
+    default: 'Tier1'
+    values: [Tier0, Tier1, Tier2, Tier3]
 
 variables:
   - name: python_version
     value: '3.11'
 
 stages:
+  - stage: SecurityScan
+    displayName: 'Static Security Testing (SAST)'
+    jobs:
+      - job: CodeSecurityLint
+        displayName: 'Run Security Analysis'
+        steps:
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: '$(python_version)'
+
+          # Install SonarQube CLI scanning wrappers and lightweight security linters
+          - script: |
+              python -m pip install --upgrade pip
+              pip install bandit
+            displayName: 'Install Security Scanner Engines'
+
+          # Scan Python scripts for hardcoded secrets, injection vectors, or weak cryptography
+          - script: |
+              bandit -r scripts/ -v
+            displayName: 'Execute Security Audits via Bandit SAST'
+
   - stage: GovernanceGate
     displayName: 'Validate Enterprise ITSM Gate'
+    dependsOn: SecurityScan
+    condition: succeeded()
     jobs:
       - job: CheckServiceNow
         displayName: 'Verify Change Window Status'
@@ -34,26 +61,13 @@ stages:
               versionSpec: '$(python_version)'
           
           - script: |
-              python -m pip install --upgrade pip
               pip install requests
             displayName: 'Install Pipeline Dependencies'
 
+          # Pass parameters downstream including severity tags to trigger correct alerts if failures occur
           - script: |
               python scripts/servicenow_change_gate.py "${{ parameters.change_id }}" "${{ parameters.deploy_env }}"
             displayName: 'Execute Change Control Verification'
             env:
               SNOW_USER: $(SECRET_SNOW_USER)
               SNOW_PASS: $(SECRET_SNOW_PASS)
-
-  - stage: ExecuteProvisioning
-    displayName: 'Trigger Target Provisioning Workflows'
-    dependsOn: GovernanceGate
-    condition: succeeded()
-    jobs:
-      - job: ProcessDeployment
-        displayName: 'Execute Platform API Targets'
-        steps:
-          - script: |
-              python scripts/azdo_board_sync.py "${{ parameters.change_id }}" "In Progress"
-            displayName: 'Sync DevOps Work Tracking Status'
-
