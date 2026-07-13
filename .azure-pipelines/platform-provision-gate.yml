@@ -1,0 +1,59 @@
+trigger: none
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+parameters:
+  - name: change_id
+    type: string
+    default: 'CHG0000000'
+  - name: deploy_env
+    type: string
+    default: 'QA'
+    values:
+      - SB
+      - DEV
+      - ISIT
+      - QA
+      - UAT
+      - PRD
+
+variables:
+  - name: python_version
+    value: '3.11'
+
+stages:
+  - stage: GovernanceGate
+    displayName: 'Validate Enterprise ITSM Gate'
+    jobs:
+      - job: CheckServiceNow
+        displayName: 'Verify Change Window Status'
+        steps:
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: '$(python_version)'
+          
+          - script: |
+              python -m pip install --upgrade pip
+              pip install requests
+            displayName: 'Install Pipeline Dependencies'
+
+          - script: |
+              python scripts/servicenow_change_gate.py "${{ parameters.change_id }}" "${{ parameters.deploy_env }}"
+            displayName: 'Execute Change Control Verification'
+            env:
+              SNOW_USER: $(SECRET_SNOW_USER)
+              SNOW_PASS: $(SECRET_SNOW_PASS)
+
+  - stage: ExecuteProvisioning
+    displayName: 'Trigger Target Provisioning Workflows'
+    dependsOn: GovernanceGate
+    condition: succeeded()
+    jobs:
+      - job: ProcessDeployment
+        displayName: 'Execute Platform API Targets'
+        steps:
+          - script: |
+              python scripts/azdo_board_sync.py "${{ parameters.change_id }}" "In Progress"
+            displayName: 'Sync DevOps Work Tracking Status'
+
