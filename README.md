@@ -9,14 +9,16 @@ This repository provides architectural components for automated change gating, t
 ## Operational Problem Solved
 Manual compliance monitoring scales poorly across decoupled staging boundaries. This package implements software-defined gates to prevent configuration drift, enforce maintenance window validations, and eliminate manual tracking updates across isolated lifecycle layers.
 
-## Technical Framework
-- **Pre-Execution Change Validation:** Python automation queries internal ticketing systems to verify scheduled deployment windows before provisioning compute fabrics.
-- **Bi-Directional State Synchronization:** Automatic patch mechanics push execution histories directly into parent project tracking layers upon deployment.
+## Technical Framework & Automation Modules
+- **Pre-Execution Change Validation (`scripts/servicenow_change_gate.py`):** Python automation queries internal ticketing systems to verify scheduled deployment windows before provisioning compute fabrics.
+- **Bi-Directional State Synchronization (`scripts/azdo_board_sync.py`):** Automatic patch mechanics push execution histories directly into parent project tracking layers upon deployment.
 - **Multi-Engine Target Profiles:** Native execution pipelines configured for Azure DevOps cloud fabrics and Jenkins on-premises topologies.
-
-## System Prerequisites
-- Python 3.10+
-- Execution access to enterprise project platform REST endpoints
+- **Dynamic Topological Auditing:** The analytical engine tracks regional metrics, cloud availability zones (`canadaeast`, `canadacentral`), and local virtualization contexts (`ESXi-Cluster-01`).
+- **Automated Notification Pathways:** Includes dedicated payload delivery models that intercept verification breakdowns and route warnings directly to messaging webhooks.
+- **Priority-Aware Notification Engine (`scripts/send_pipeline_alert.py`):** Evaluates asset threat ratings (Tier0, Tier1, Tier2) and routes critical incidents to emergency engineering endpoints while directing non-critical staging notices to general operations tracking logs.
+- **Architectural Policy Control:** Structural governance decisions are preserved via an Architectural Decision Record (ADR) matrix located inside the repository directories.
+- **Continuous Compliance Engine (`scripts/generate_compliance_report.py`):** Evaluates multi-cloud and on-premises infrastructure inventories against corporate safety metrics. Captures layout data including regional tags, availability zones, and security perimeters to generate markdown report summaries.
+- **Static Security Testing (SAST):** Pipeline integrations run security analysis (`bandit`) checking for hardcoded secrets, injection vectors, or weak cryptography.
 
 ## Updated System Architecture Layout
 The configuration engine links project boards, pipeline validators, messaging hooks, and inventory matrices into a unified workspace layer:
@@ -28,7 +30,11 @@ The configuration engine links project boards, pipeline validators, messaging ho
 ▼ (Failure Intercept)
 [ Operations Teams   ] ◄── [ Notification Hub ] ◄── [ Real-Time Chat Webhooks ]
 
-## Added Functional Enhancements
-- **Dynamic Topological Auditing:** The analytical engine tracks regional metrics, cloud availability zones (`canadaeast`, `canadacentral`), and local virtualization contexts (`ESXi-Cluster-01`).
-- **Automated Notification Pathways:** Includes dedicated payload delivery models that intercept verification breakdowns and route warnings directly to messaging webhooks.
-- **Architectural Policy Control:** Structural governance decisions are preserved via an Architectural Decision Record (ADR) matrix located inside the repository directories.
+## Layout Configuration
+- **.azure-pipelines/platform-provision-gate.yml:** Native configuration file handling change controls, security lint stages, and automated parameters.
+- **.jenkins/Jenkinsfile.deploy:** Declarative pipeline orchestrator targeting local line-of-sight application nodes.
+- **docs/adr/:** Directory hosting consolidated Architectural Decision Records (ADRs).
+
+## System Prerequisites
+- Python 3.10+
+- Execution access to enterprise project platform REST endpoints
