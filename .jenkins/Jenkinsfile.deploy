@@ -1,0 +1,45 @@
+pipeline {
+    agent any
+
+    parameters {
+        string(name: 'CHANGE_ID', defaultValue: 'CHG0000000', description: 'ServiceNow Change Request Identifier')
+        choice(name: 'DEPLOY_ENV', choices: ['ISIT', 'QA', 'UAT', 'PRD'], description: 'Target Execution Environment')
+    }
+
+    environment {
+        SNOW_CREDENTIALS = credentials('jenkins-servicenow-api-auth')
+        AZDO_CREDENTIALS = credentials('jenkins-azure-devops-pat')
+    }
+
+    stages {
+        stage('Initialize Environment') {
+            steps {
+                echo "Initializing validation layer for Environment: ${params.DEPLOY_ENV}"
+                sh 'pip install --user requests'
+            }
+        }
+
+        stage('ITSM Governance Audit') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'jenkins-servicenow-api-auth', usernameVariable: 'SNOW_USER', passwordVariable: 'SNOW_PASS')]) {
+                    sh "python scripts/servicenow_change_gate.py ${params.CHANGE_ID} ${params.DEPLOY_ENV}"
+                }
+            }
+        }
+
+        stage('Synchronize Work Tracking') {
+            steps {
+                withCredentials([string(credentialsId: 'jenkins-azure-devops-pat', variable: 'AZDO_TOKEN')]) {
+                    sh "python scripts/azdo_board_sync.py ${params.CHANGE_ID} 'In Progress'"
+                }
+            }
+        }
+
+        stage('Line of Sight Execution') {
+            steps {
+                echo "Governance verified. Triggering site-specific application server deployment routines..."
+            }
+        }
+    }
+}
+
