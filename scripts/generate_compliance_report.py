@@ -5,26 +5,70 @@ from datetime import datetime
 
 # ==============================================================================
 # Script Name: generate_compliance_report.py
-# Description: Simulates an enterprise-scale compliance auditing engine. Parses 
-#              simulated server node metrics across hybrid landscapes (vSphere/Azure)
-#              and generates an executive markdown summary report.
+# Description: Evaluates multi-cloud and on-premises infrastructure inventories 
+#              against corporate safety metrics. Captures layout data including 
+#              regional tags, availability zones, and security perimeters.
 # ==============================================================================
 
 def load_mock_inventory_data():
     """
-    Returns a mock collection of multi-tiered enterprise infrastructure nodes.
-    This simulates pulling live states from Puppet DB, Azure Graph API, and vCenter.
+    Returns a unified infrastructure matrix spanning Azure and vSphere environments.
+    Simulates real data parsed from cloud resource graphs and local asset databases.
     """
     return [
-        {"hostname": "t0-prd-tor-db2-01", "os": "SLES 15.4", "tier": "Tier 0 Database", "hosting": "vSphere", "cis_hardened": True, "patches_pending": 0, "active_certs_valid": True},
-        {"hostname": "t1-prd-az-sapapp-01", "os": "SLES 15.7", "tier": "Tier 1 Application", "hosting": "Azure", "cis_hardened": True, "patches_pending": 2, "active_certs_valid": True},
-        {"hostname": "t2-uat-tor-caddy-01", "os": "Ubuntu 24.04", "tier": "Tier 2 DMZ Proxy", "hosting": "vSphere", "cis_hardened": True, "patches_pending": 0, "active_certs_valid": False}, # Expiring Cert
-        {"hostname": "t1-isit-tor-liberty-02", "os": "Ubuntu 22.04", "tier": "Tier 1 Application", "hosting": "vSphere", "cis_hardened": False, "patches_pending": 14, "active_certs_valid": True} # Out of compliance
+        {
+            "hostname": "prd-cae-sapapp-01", 
+            "os": "SLES 15.7", 
+            "network_zone": "Tier 0 SAP Core", 
+            "platform": "Azure", 
+            "region": "canadaeast", 
+            "availability_zone": "CA East AZ-1", 
+            "cis_hardened": True, 
+            "patches_pending": 0, 
+            "active_certs_valid": True,
+            "classification": "Tier0"
+        },
+        {
+            "hostname": "prd-caw-sapdb-01", 
+            "os": "SLES 15.7", 
+            "network_zone": "Tier 0 SAP DB", 
+            "platform": "Azure", 
+            "region": "canadacentral", 
+            "availability_zone": "CA Central AZ-2", 
+            "cis_hardened": True, 
+            "patches_pending": 1, 
+            "active_certs_valid": True,
+            "classification": "Tier0"
+        },
+        {
+            "hostname": "t2-uat-tor-caddy-01", 
+            "os": "Ubuntu 24.04", 
+            "network_zone": "Tier 2 DMZ Proxy", 
+            "platform": "vSphere", 
+            "region": "tor-dc-alpha", 
+            "availability_zone": "ESXi-Cluster-02", 
+            "cis_hardened": True, 
+            "patches_pending": 0, 
+            "active_certs_valid": False, # Expiring Cert
+            "classification": "Tier2"
+        },
+        {
+            "hostname": "t1-isit-tor-liberty-02", 
+            "os": "Ubuntu 22.04", 
+            "network_zone": "Tier 1 Application", 
+            "platform": "vSphere", 
+            "region": "tor-dc-beta", 
+            "availability_zone": "ESXi-Cluster-01", 
+            "cis_hardened": False, # Non-hardened
+            "patches_pending": 14, # Patch drift
+            "active_certs_valid": True,
+            "classification": "Tier1"
+        }
     ]
 
 def evaluate_compliance(inventory):
     """
-    Analyzes raw inventory data against corporate security baselines.
+    Evaluates each infrastructure record against structural guardrails.
     """
     total_nodes = len(inventory)
     compliant_nodes = 0
@@ -32,62 +76,74 @@ def evaluate_compliance(inventory):
 
     for node in inventory:
         issues = []
+        # Enforce CIS Benchmark checks
         if not node["cis_hardened"]:
-            issues.append("Fails CIS Benchmark baseline profile rules")
+            issues.append("Fails configuration baseline checklist rules")
+        # Monitor systemic patching gaps
         if node["patches_pending"] > 5:
-            issues.append(f"Critical patch drift detected: {node['patches_pending']} packages outstanding")
+            issues.append(f"Patch distribution variance: {node['patches_pending']} outstanding updates")
+        # Track expiration timelines on certificates
         if not node["active_certs_valid"]:
-            issues.append("TLS Keystore contains an expired or expiring certificate chain")
+            issues.append("Target service keystore reports validation failures / expired signatures")
 
         if len(issues) == 0:
             compliant_nodes += 1
         else:
-            drift_details.append({"hostname": node["hostname"], "tier": node["tier"], "issues": issues})
+            drift_details.append({
+                "hostname": node["hostname"], 
+                "network_zone": node["network_zone"], 
+                "platform": node["platform"],
+                "location": f"{node['region']} / {node['availability_zone']}",
+                "classification": node["classification"],
+                "issues": issues
+            })
 
     compliance_percentage = (compliant_nodes / total_nodes) * 100
     return total_nodes, compliant_nodes, compliance_percentage, drift_details
 
 def generate_markdown_report(total, compliant, percentage, issues):
     """
-    Generates a structured dashboard file detailing corporate compliance metrics.
+    Outputs a consolidated enterprise infrastructure audit dashboard.
     """
     report_path = "reports/COMPLIANCE_SUMMARY.md"
     os.makedirs("reports", exist_ok=True)
-
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    markdown_content = f"""# Enterprise Hybrid-Cloud Compliance Audit Report
+    markdown_content = f"""# Enterprise Compliance Audit Summary
 
-## Execution Metadata
-- **Audit Timestamp:** {current_time}
-- **Target Landscape:** Institutional Hybrid Fabric (vSphere Core & Azure VNet Enclaves)
-- **Compliance Baseline:** CIS Benchmarks / Enterprise Governance Policy v4.2
+## Audit Execution Context
+- **Report Generation Time:** {current_time}
+- **Asset Control Landscape:** Hybrid Infrastructure Footprint (Azure Subscriptions & vSphere Hosts)
+- **Target Parameters:** CIS Hardening Specifications, Lifecycle Patching, Cryptographic Integrity
 
-## Executive Dashboard Metrics
+## High-Level Status Dashboard
 
-| Metric Category | System Count / Percentage | Status Indicator |
+| Metric Segment | Quantity / Operational State | Evaluation Status |
 | :--- | :--- | :--- |
-| **Total Tracked Assets** | {total} Nodes | Consolidated Inventory |
-| **Fully Compliant Nodes** | {compliant} Nodes | Verified Stable |
-| **Global Compliance Rating** | {percentage:.1f}% | {'🔴 Action Required' if percentage < 90 else '🟢 Within Acceptable Limits'} |
+| **Tracked Infrastructure Nodes** | {total} Evaluated Assets | Monitored Platform Assets |
+| **Verified Compliant Nodes** | {compliant} Validated Stables | Stable Production Integrity |
+| **Systemic Compliance Rating** | {percentage:.1f}% | {'🔴 Action Required - Beyond Bounds' if percentage < 90 else '🟢 Within Acceptable Limits'} |
 
-## Active Compliance Drift & Discrepancies
-The following anomalies were flagged by the orchestration verification layer and require remediation pipelines or automated change tickets:
+## Active Compliance Drift & Infrastructure Discrepancies
+The platform orchestration engine discovered the following variance vectors requiring immediate remediation or lifecycle management workflows:
 
 """
     if not issues:
-        markdown_content += "🟢 **Zero drift detected across all scanned target environments.**\n"
+        markdown_content += "🟢 **Zero structural compliance drift identified across tracked inventory zones.**\n"
     else:
         for item in issues:
-            markdown_content += f"### ⚠️ Node: {item['hostname']} ({item['tier']})\n"
+            markdown_content += f"### ⚠️ Asset: {item['hostname']} [{item['classification']}]\n"
+            markdown_content += f"- **Infrastructure Layer:** {item['platform']} Cloud Topology\n"
+            markdown_content += f"- **Regional / Zone Mapping:** `{item['location']}`\n"
+            markdown_content += f"- **Network Boundary:** Layer-Zoned `{item['network_zone']}` Subnet Mesh\n"
+            markdown_content += f"- **Discovered Drift Deviations:**\n"
             for issue in item['issues']:
-                markdown_content += f"- [ ] {issue}\n"
+                markdown_content += f"  - [ ] {issue}\n"
             markdown_content += "\n"
 
     with open(report_path, "w") as report_file:
         report_file.write(markdown_content)
-    
-    print(f"[SUCCESS] Compliance analysis generated successfully at: {report_path}")
+    print(f"[SUCCESS] Enterprise compliance data published safely to: {report_path}")
 
 if __name__ == "__main__":
     raw_data = load_mock_inventory_data()
