@@ -2,7 +2,13 @@
 import os
 import sys
 import json
-import requests
+import time
+
+try:
+    import requests  # type: ignore
+except ImportError:
+    print("[ERROR] Required module 'requests' is not installed. Install with: pip install requests")
+    sys.exit(1)
 
 # ==============================================================================
 # Script Name: send_pipeline_alert.py
@@ -24,7 +30,7 @@ def transmit_alert(pipeline_name, execution_status, environment, classification,
         print("[CRITICAL] High-severity production breach identified. Escaling alert destination.")
         webhook_url = os.getenv("EMERGENCY_ESCALATION_WEBHOOK_URL", "https://localhost/mock-emergency-webhook")
 
-    current_timestamp = requests.utils.time.time()
+    current_timestamp = time.time()
     
     # Establish priority markers based on technical layers
     color_code = "FF0000" if classification.upper() == "TIER0" else "FFA500"
@@ -51,8 +57,8 @@ def transmit_alert(pipeline_name, execution_status, environment, classification,
 
     try:
         print(f"[INFO] Dispatching {classification} notification cards to target endpoints...")
-        # response = requests.post(webhook_url, json=alert_payload, timeout=5)
-        # response.raise_for_status()
+        response = requests.post(webhook_url, json=alert_payload, timeout=5)
+        response.raise_for_status()
         print(f"[SUCCESS] Escalated notification state processed via target channel.")
     except Exception as e:
         print(f"[ERROR] Failed to send operational notification payload: {str(e)}")
