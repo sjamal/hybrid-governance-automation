@@ -1,6 +1,6 @@
 # Hybrid Governance Automation
 
-This repository provides architectural components for automated change gating, ticketing integrations, and project-tracking synchronization. The system establishes non-interactive compliance checkpoints between Continuous Integration engines (**Jenkins**, **Azure DevOps**) and enterprise IT Service Management (ITSM)/Agile Systems (**ServiceNow**, **Azure DevOps Boards**).
+This repository provides architectural components for automated change gating, ticketing integrations, real-time alert delivery, and project-tracking synchronization. The system establishes non-interactive compliance checkpoints between Continuous Integration engines (**Jenkins**, **Azure DevOps**) and enterprise IT Service Management (ITSM)/Agile Systems (**ServiceNow**, **Azure DevOps Boards**).
 
 ## Architecture Highlights
 - **Multi-Engine Pipelines:** Uses Azure DevOps for cloud-scale landing zones and SLES/SAP deployments, while utilizing Jenkins for on-premises Tier 1 application node deployment and line-of-sight network orchestration.
@@ -18,3 +18,17 @@ Manual compliance monitoring scales poorly across decoupled staging boundaries. 
 - Python 3.10+
 - Execution access to enterprise project platform REST endpoints
 
+## Updated System Architecture Layout
+The configuration engine links project boards, pipeline validators, messaging hooks, and inventory matrices into a unified workspace layer:
+[ Local Code Updates ] ──► [ Pipeline Linters ] ──► [ Ansible-Lint / Puppet-Lint ]
+│
+▼ (Success Condition)
+[ Runbook Analytics  ] ──► [ Compliance Engine ] ──► [ Markdown Audit Reports ]
+│
+▼ (Failure Intercept)
+[ Operations Teams   ] ◄── [ Notification Hub ] ◄── [ Real-Time Chat Webhooks ]
+
+## Added Functional Enhancements
+- **Dynamic Topological Auditing:** The analytical engine tracks regional metrics, cloud availability zones (`canadaeast`, `canadacentral`), and local virtualization contexts (`ESXi-Cluster-01`).
+- **Automated Notification Pathways:** Includes dedicated payload delivery models that intercept verification breakdowns and route warnings directly to messaging webhooks.
+- **Architectural Policy Control:** Structural governance decisions are preserved via an Architectural Decision Record (ADR) matrix located inside the repository directories.
