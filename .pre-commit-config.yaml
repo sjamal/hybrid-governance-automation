@@ -1,0 +1,15 @@
+# ==============================================================================
+# Configuration: .pre-commit-config.yaml
+# Description: Configures the local pre-commit hook architecture to enforce
+#              global syntax validation before commits are finalized.
+# ==============================================================================
+
+repos:
+  - repo: local
+    hooks:
+      - id: global-syntax-validation
+        name: Global Infrastructure Syntax Check
+        entry: python3 scripts/validate_global_syntax.py
+        language: python
+        files: \.(json|yml|yaml|sh|pp|erb)|Caddyfile$
+        pass_filenames: false
