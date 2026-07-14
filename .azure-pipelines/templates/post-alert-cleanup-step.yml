@@ -1,0 +1,36 @@
+# ==============================================================================
+# Template Name: post-alert-cleanup-step.yml
+# Description: Standardized stage execution block handling secure post-alert
+#              workspace sanitization and temporary file removals.
+# ==============================================================================
+
+stages:
+  - stage: OperationalExecution
+    displayName: 'Core Automation Processing Tiers'
+    jobs:
+      - job: ProcessAlertingTasks
+        displayName: 'Dispatch Infrastructure Alert Payload Cards'
+        steps:
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: '3.11'
+          
+          # Simulate processing an infrastructure alert or diagnostic check run
+          - script: |
+              echo "[INFO] Executing boundary analytics and generating diagnostic logs..."
+              python scripts/compile_diagnostic_logs.py "Perimeter-Mesh" "Automated validation gate warning profile" "Traceback log: Expiration warning"
+            displayName: 'Execute Core Asset Evaluation'
+
+  - stage: PostAlertCleanup
+    displayName: 'Secure Environment Sanitization'
+    dependsOn: OperationalExecution
+    condition: always() # Enforce execution always to ensure cleanup runs even if alerts crash
+    jobs:
+      - job: SanitizeRunnerWorkspace
+        displayName: 'Purge Temporary Workspace Records'
+        steps:
+          # Trigger the baseline shell cleanup script to erase temporary json traces
+          - script: |
+              chmod +x scripts/purge_diagnostic_scratch.sh
+              bash scripts/purge_diagnostic_scratch.sh
+            displayName: 'Execute Post-Alert Scratch Zone Purge'
