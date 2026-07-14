@@ -1,6 +1,6 @@
 # Hybrid Governance Automation
 
-This repository provides architectural components for automated change gating, ticketing integrations, real-time alert delivery, and project-tracking synchronization. The system establishes non-interactive compliance checkpoints between Continuous Integration engines (**Jenkins**, **Azure DevOps**) and enterprise IT Service Management (ITSM)/Agile Systems (**ServiceNow**, **Azure DevOps Boards**).
+This repository provides architectural components for automated change gating, ticketing integrations, real-time alert delivery, security code analysis (SAST) and project-tracking synchronization. The system establishes non-interactive compliance checkpoints between Continuous Integration engines (**Jenkins**, **Azure DevOps**) and enterprise IT Service Management (ITSM)/Agile Systems (**ServiceNow**, **Azure DevOps Boards**).
 
 ## Architecture Highlights
 - **Multi-Engine Pipelines:** Uses Azure DevOps for cloud-scale landing zones and SLES/SAP deployments, while utilizing Jenkins for on-premises Tier 1 application node deployment and line-of-sight network orchestration.
@@ -8,6 +8,27 @@ This repository provides architectural components for automated change gating, t
 
 ## Operational Problem Solved
 Manual compliance monitoring scales poorly across decoupled staging boundaries. This package implements software-defined gates to prevent configuration drift, enforce maintenance window validations, and eliminate manual tracking updates across isolated lifecycle layers.
+
+## Workspace Layout
+- **.azure-pipelines/:** Configuration files handling change controls, security lints, and validation tasks.
+- **scripts/:** Target directory hosting automation wrappers, log consolidators, and syntax checking tools.
+- **docs/adr/:** Centralized directory hosting consolidated Architectural Decision Records (ADRs).
+- **.pre-commit-config.yaml:** Configures local pre-commit validation frameworks.
+
+## Layout Configuration
+- **.azure-pipelines/platform-provision-gate.yml:** Native configuration file handling change controls, security lint stages, and automated parameters.
+- **.jenkins/Jenkinsfile.deploy:** Declarative pipeline orchestrator targeting local line-of-sight application nodes.
+- **docs/adr/:** Directory hosting consolidated Architectural Decision Records (ADRs).
+
+## System Architecture Layout
+The configuration engine links project boards, pipeline validators, messaging hooks, and inventory matrices into a unified workspace layer:
+[ Local Code Updates ] ──► [ Pipeline Linters ] ──► [ Ansible-Lint / Puppet-Lint ]
+│
+▼ (Success Condition)
+[ Runbook Analytics  ] ──► [ Compliance Engine ] ──► [ Markdown Audit Reports ]
+│
+▼ (Failure Intercept)
+[ Operations Teams   ] ◄── [ Notification Hub ] ◄── [ Real-Time Chat Webhooks ]
 
 ## Technical Framework & Automation Modules
 - **Pre-Execution Change Validation (`scripts/servicenow_change_gate.py`):** Python automation queries internal ticketing systems to verify scheduled deployment windows before provisioning compute fabrics.
@@ -20,21 +41,12 @@ Manual compliance monitoring scales poorly across decoupled staging boundaries. 
 - **Continuous Compliance Engine (`scripts/generate_compliance_report.py`):** Evaluates multi-cloud and on-premises infrastructure inventories against corporate safety metrics. Captures layout data including regional tags, availability zones, and security perimeters to generate markdown report summaries.
 - **Static Security Testing (SAST):** Pipeline integrations run security analysis (`bandit`) checking for hardcoded secrets, injection vectors, or weak cryptography.
 
-## Updated System Architecture Layout
-The configuration engine links project boards, pipeline validators, messaging hooks, and inventory matrices into a unified workspace layer:
-[ Local Code Updates ] ──► [ Pipeline Linters ] ──► [ Ansible-Lint / Puppet-Lint ]
-│
-▼ (Success Condition)
-[ Runbook Analytics  ] ──► [ Compliance Engine ] ──► [ Markdown Audit Reports ]
-│
-▼ (Failure Intercept)
-[ Operations Teams   ] ◄── [ Notification Hub ] ◄── [ Real-Time Chat Webhooks ]
-
-## Layout Configuration
-- **.azure-pipelines/platform-provision-gate.yml:** Native configuration file handling change controls, security lint stages, and automated parameters.
-- **.jenkins/Jenkinsfile.deploy:** Declarative pipeline orchestrator targeting local line-of-sight application nodes.
-- **docs/adr/:** Directory hosting consolidated Architectural Decision Records (ADRs).
-
 ## System Prerequisites
 - Python 3.10+
 - Execution access to enterprise project platform REST endpoints
+
+## Standard Code Contribution Rules
+To preserve code quality, all contributions must align with the global team policies:
+1. Isolate work within dedicated `feature/` branches split from `develop`.
+2. Ensure local syntax checking tools pass completely before committing variations.
+3. Outline changes clearly against architectural definitions when submitting Pull Requests.
