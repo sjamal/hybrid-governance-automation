@@ -41,6 +41,24 @@ The configuration engine links project boards, pipeline validators, messaging ho
 - **Continuous Compliance Engine (`scripts/generate_compliance_report.py`):** Evaluates multi-cloud and on-premises infrastructure inventories against corporate safety metrics. Captures layout data including regional tags, availability zones, and security perimeters to generate markdown report summaries.
 - **Static Security Testing (SAST):** Pipeline integrations run security analysis (`bandit`) checking for hardcoded secrets, injection vectors, or weak cryptography.
 
+## Enterprise Ecosystem
+
+This repository is part of an integrated enterprise automation framework. Related projects handle complementary infrastructure tasks:
+
+### 🔐 Companion Repositories
+
+- **[ansible](https://github.com/sjamal/ansible)** — Ansible playbooks for infrastructure provisioning and configuration management (disk reporting, SLES package management)
+- **[enterprise-hybrid-pipelines](https://github.com/sjamal/enterprise-hybrid-pipelines)** — Azure DevOps pipeline definitions and post-provisioning automation scripts
+- **[enterprise-network-mesh](https://github.com/sjamal/enterprise-network-mesh)** — Multi-stage network architecture validation and boundary auditing
+- **[enterprise-cert-cryptographer](https://github.com/sjamal/enterprise-cert-cryptographer)** — TLS certificate management, transformation, and secure distribution
+- **[puppet-enterprise-profiles](https://github.com/sjamal/puppet-enterprise-profiles)** — Puppet configuration modules for enterprise infrastructure
+- **[puppet-sles-hardening](https://github.com/sjamal/puppet-sles-hardening)** — CIS hardening profiles for SLES via Puppet
+
+### 🛠 Supporting Tools
+
+- **[python-sysadmin-tools](https://github.com/sjamal/python-sysadmin-tools)** — Python utilities for disk auditing, VM sizing, and infrastructure analysis
+- **[bash](https://github.com/sjamal/bash)** — Shell scripts for certificate generation, file operations, and data processing pipelines
+
 ## System Prerequisites
 - Python 3.10+
 - Execution access to enterprise project platform REST endpoints
